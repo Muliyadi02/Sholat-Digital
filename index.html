@@ -724,6 +724,12 @@ const FALLBACK_SURAH_AUDIO = 'https://cdn.islamic.network/quran/audio-surah/128/
 let uLat=-5.1477, uLng=119.4327;
 let pTimes={}, qAngleVal=0, compassH=0;
 let demoIv=null, camStream=null;
+// ── State sensor kompas (robust) ──
+let realSensorActive=false;   // true hanya jika sudah menerima data sensor ASLI yang valid
+let absoluteLocked=false;     // true jika sumber data sudah terkunci ke pembacaan absolut (akurat)
+let smoothedHeading=null;     // heading hasil smoothing (anti-jitter/anti-pusing)
+let orientWatchdog=null;      // timer: jika sensor tak merespon, fallback ke demo
+let lastARState=null;         // untuk hysteresis status panduan AR (anti kedip-kedip)
 let voiceEnabled=true, lastSpokenState=null, lastSpokenTs=0;
 let alertedSet=new Set();
 let selectedQari='05';
@@ -997,35 +1003,103 @@ function drawTicks(){
   g.innerHTML=h;
 }
 function startCompass(){
+  // Hentikan mode demo & watchdog lama sebelum mencoba sensor asli lagi
+  if(demoIv){clearInterval(demoIv);demoIv=null;}
+  if(orientWatchdog){clearTimeout(orientWatchdog);orientWatchdog=null;}
+  realSensorActive=false;absoluteLocked=false;smoothedHeading=null;
+  document.getElementById('sdot').className='sdot';
+  document.getElementById('snTxt').textContent='Mencari sinyal kompas...';
+
   if(typeof DeviceOrientationEvent!=='undefined'){
     if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      // iOS: wajib diminta dari aksi tap pengguna (tombol Kalibrasi)
       DeviceOrientationEvent.requestPermission().then(p=>{
-        if(p==='granted')listenOrient();else showToast('⚠️ Izin sensor ditolak');
-      }).catch(()=>showToast('⚠️ Sensor tidak tersedia'));
-    } else {listenOrient();}
-  } else {simCompass();}
+        if(p==='granted'){listenOrient();}
+        else{showToast('⚠️ Izin sensor kompas ditolak. Aktifkan lewat Pengaturan Browser.');simCompass();}
+      }).catch(()=>{showToast('⚠️ Sensor kompas tidak tersedia di perangkat ini');simCompass();});
+    } else {
+      listenOrient();
+    }
+  } else {
+    showToast('⚠️ Perangkat/browser tidak mendukung sensor arah');
+    simCompass();
+  }
 }
 function listenOrient(){
-  document.getElementById('sdot').className='sdot on';
-  document.getElementById('snTxt').textContent='Sensor kompas aktif';
-  if(demoIv){clearInterval(demoIv);demoIv=null;}
-  window.addEventListener('deviceorientationabsolute',handleOrient,true);
-  window.addEventListener('deviceorientation',handleOrient,true);
-  showToast('🧭 Kompas aktif! Putar perangkat perlahan.');
+  document.getElementById('snTxt').textContent='Menghubungkan sensor...';
+  // Dengarkan sumber ABSOLUT dulu (paling akurat, benar-benar terikat ke arah utara).
+  window.addEventListener('deviceorientationabsolute',handleOrientAbsolute,true);
+  // Sumber fallback: dipakai HANYA jika belum ada data absolut yang terkunci,
+  // ATAU untuk iOS yang memakai webkitCompassHeading (selalu akurat & sudah terkompensasi).
+  window.addEventListener('deviceorientation',handleOrientFallback,true);
+  // Watchdog: jika 2.5 detik tak ada respons sensor sama sekali, baru pindah ke mode demo
+  orientWatchdog=setTimeout(()=>{
+    if(!realSensorActive){
+      showToast('⚠️ Sensor kompas tidak terdeteksi — mode demo diaktifkan');
+      simCompass();
+    }
+  },2500);
 }
-function handleOrient(e){
-  let h=e.webkitCompassHeading!==undefined?e.webkitCompassHeading:360-e.alpha;
+function handleOrientAbsolute(e){
+  if(e.alpha===null||e.alpha===undefined)return;
+  absoluteLocked=true;
+  processHeading(computeHeadingFromEvent(e),true);
+}
+function handleOrientFallback(e){
+  // iOS Safari tidak mengirim 'deviceorientationabsolute', tapi webkitCompassHeading
+  // sudah berupa arah kompas magnetik yang benar & terkompensasi orientasi layar.
+  if(e.webkitCompassHeading!==undefined){
+    processHeading(e.webkitCompassHeading,true);
+    return;
+  }
+  // Jika sudah terkunci ke sumber absolut, abaikan event relatif ini —
+  // ini pencegah utama "tabrakan data" yang membuat arah loncat-loncat/pusing.
+  if(absoluteLocked)return;
+  if(e.alpha===null||e.alpha===undefined)return;
+  // Beberapa browser menandai event ini absolut juga lewat e.absolute===true
+  processHeading(computeHeadingFromEvent(e), e.absolute===true);
+}
+// Hitung heading (0-360°, searah jarum jam dari Utara) dari alpha,
+// dikompensasi terhadap rotasi layar (portrait/landscape) agar tetap akurat.
+function computeHeadingFromEvent(e){
+  const screenAngle=(screen.orientation&&typeof screen.orientation.angle==='number')
+      ?screen.orientation.angle
+      :(typeof window.orientation==='number'?window.orientation:0);
+  let heading=360-e.alpha-screenAngle;
+  return((heading%360)+360)%360;
+}
+// Smoothing melingkar (exponential moving average) supaya jarum tidak bergetar/lompat
+// akibat noise sensor — inilah penyebab utama tampilan yang bikin pusing.
+function smoothCompass(raw){
+  if(smoothedHeading===null){smoothedHeading=raw;return smoothedHeading;}
+  let diff=((raw-smoothedHeading+540)%360)-180; // selisih terpendek, aman utk lintas 360°→0°
+  smoothedHeading=(smoothedHeading+diff*0.25+360)%360;
+  return smoothedHeading;
+}
+function processHeading(raw,isAccurate){
+  if(raw===null||raw===undefined||isNaN(raw))return;
+  if(!realSensorActive){
+    realSensorActive=true;
+    if(demoIv){clearInterval(demoIv);demoIv=null;}
+    if(orientWatchdog){clearTimeout(orientWatchdog);orientWatchdog=null;}
+    document.getElementById('sdot').className='sdot on';
+    showToast('🧭 Kompas aktif! Putar perangkat perlahan.');
+  }
+  const h=smoothCompass(raw);
   compassH=h;
+  document.getElementById('snTxt').textContent=isAccurate?'Sensor kompas aktif':'Sensor aktif (akurasi terbatas)';
   document.getElementById('cnw').style.transform=`rotate(${-h}deg)`;
   document.getElementById('qBear').textContent=Math.round(h)+'°';
-  document.getElementById('qAcc').textContent=e.webkitCompassAccuracy?`±${Math.round(e.webkitCompassAccuracy)}°`:'Aktif';
+  document.getElementById('qAcc').textContent=isAccurate?'Baik':'Rendah — kalibrasi ulang (gerakkan HP membentuk angka 8)';
   updateQibla();updateBearing(h);
 }
 function simCompass(){
+  realSensorActive=false;
   document.getElementById('sdot').className='sdot';
   document.getElementById('snTxt').textContent='Mode demo (tanpa sensor fisik)';
   document.getElementById('qAcc').textContent='Demo';
   let d=0;if(demoIv)clearInterval(demoIv);
+  smoothedHeading=null;
   demoIv=setInterval(()=>{d=(d+.4)%360;compassH=d;
     document.getElementById('cnw').style.transform=`rotate(${-d}deg)`;
     document.getElementById('qBear').textContent=Math.round(d)+'°';
@@ -1068,10 +1142,15 @@ function updateARStatus(h){
   const status=document.getElementById('arStatus');
   let state,cls,iconTxt,mainTxt,subTxt;
 
-  if(abs<=4){
+  // Hysteresis (ambang masuk vs keluar berbeda) agar status tidak lompat-lompat
+  // saat sudut persis di garis batas — ini yang membuat panduan terasa "pusing".
+  const inLock=lastARState==='lock'?abs<=6:abs<=4;
+  const inSlight=(lastARState==='l-slight'||lastARState==='r-slight')?abs<=17:abs<=15;
+
+  if(inLock){
     state='lock';cls='g';iconTxt='✅';mainTxt='Pas! Lurus ke Kiblat';subTxt='Pertahankan posisi ini';
     vp.classList.add('locked');vp.classList.remove('off-r','off-y');
-  } else if(abs<=15){
+  } else if(inSlight){
     cls='y';
     if(signed>0){state='r-slight';iconTxt='↪️';mainTxt='Geser sedikit ke kanan';}
     else{state='l-slight';iconTxt='↩️';mainTxt='Geser sedikit ke kiri';}
@@ -1084,6 +1163,7 @@ function updateARStatus(h){
     subTxt=`Selisih ±${Math.round(abs)}°`;
     vp.classList.add('off-r');vp.classList.remove('locked','off-y');
   }
+  lastARState=state;
   icon.textContent=iconTxt;
   icon.className='asi'+(state==='l-slight'||state==='l-far'?' nudge-l':state==='r-slight'||state==='r-far'?' nudge-r':'');
   txt.textContent=mainTxt;
@@ -1137,7 +1217,7 @@ async function startCam(){
     document.getElementById('camStopBtn').style.display='inline-flex';
     document.getElementById('arQL').style.display='flex';
     showToast('📷 Kamera aktif! Cari panah hijau 🕋');
-    if(!demoIv)simCompass();
+    if(!realSensorActive&&!demoIv)simCompass();
   }catch(e){showToast('⚠️ Kamera gagal: '+e.message);}
 }
 function stopCam(){
@@ -1475,7 +1555,7 @@ function goTab(name,topBtn,botBtn){
   const idx=TABS.indexOf(name);
   document.querySelectorAll('.tab-btn')[idx]?.classList.add('active');
   document.querySelectorAll('.btab')[idx]?.classList.add('active');
-  if(name==='kiblat'&&!demoIv)simCompass();
+  if(name==='kiblat'&&!realSensorActive&&!demoIv)simCompass();
   if(name==='quran'&&!allSurahs.length)loadSurahList();
 }
 
@@ -1502,7 +1582,11 @@ window.addEventListener('DOMContentLoaded',()=>{
   setInterval(updateDates,60000);
   setInterval(applyMethod,60000);
   if(Notification.permission==='granted')document.getElementById('notifSt').textContent='✅ Diizinkan';
-  setTimeout(()=>{simCompass();startCompass();},900);
+  // Coba sensor asli dulu; simCompass() hanya dipanggil sebagai fallback OTOMATIS
+  // dari dalam startCompass()/watchdog jika sensor asli gagal/tidak tersedia.
+  // Tampilkan demo singkat dulu (0.9s) sebagai placeholder visual sebelum sensor siap.
+  simCompass();
+  setTimeout(()=>{startCompass();},900);
 });
 
 // ══════════════════════════════════════════
