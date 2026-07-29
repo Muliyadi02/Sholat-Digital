@@ -34,6 +34,17 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--navy);colo
 @keyframes floatMoon{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .mosque-bg{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(700px,100vw);z-index:1;opacity:.1}
 
+/* ── MATAHARI (ciri khas Muhammadiyah) — watermark latar di semua halaman ── */
+.matahari-wrap{position:fixed;top:50%;left:50%;width:min(780px,150vw);height:min(780px,150vw);transform:translate(-50%,-50%);z-index:1;opacity:.05;pointer-events:none;mix-blend-mode:screen}
+.matahari-wrap svg{width:100%;height:100%;transform-origin:100px 100px;animation:mhSpin 220s linear infinite}
+@keyframes mhSpin{to{transform:rotate(360deg)}}
+.mh-ray{fill:url(#mhRayGrad);animation:mhBreathe 5.5s ease-in-out infinite}
+.mh-ray:nth-child(odd){animation-delay:-2.75s}
+@keyframes mhBreathe{0%,100%{opacity:.75}50%{opacity:1}}
+.mh-ring{fill:none;stroke:var(--gold);stroke-width:.6;opacity:.5}
+.mh-core{fill:url(#mhCoreGrad);stroke:var(--gold);stroke-width:.8}
+@media(min-width:900px){.matahari-wrap{opacity:.045}}
+
 /* LAYOUT */
 .app{position:relative;z-index:2;min-height:100vh;max-width:900px;margin:0 auto;padding:0 14px 90px}
 
@@ -191,70 +202,82 @@ header{padding:16px 0 8px;display:flex;align-items:center;justify-content:space-
 .sdot.on{background:var(--green);animation:pulse 2s infinite}
 .sdot.err{background:var(--red)}
 
-/* ── CAMERA ── */
+/* ── CAMERA / AR KIBLAT — fokus tunggal, HUD ringkas ── */
 .cam-section{display:flex;flex-direction:column;align-items:center;gap:14px}
-.cam-vp{position:relative;width:100%;max-width:500px;aspect-ratio:4/3;background:#050d18;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 0 35px rgba(27,108,168,.2)}
+.cam-vp{position:relative;width:100%;max-width:500px;aspect-ratio:4/3;background:#050d18;border-radius:22px;overflow:hidden;border:1px solid var(--border);box-shadow:0 0 0 1px rgba(201,168,76,.15),0 10px 45px rgba(0,0,0,.5),0 0 60px rgba(27,108,168,.15);transition:box-shadow .4s}
 #camFeed{width:100%;height:100%;object-fit:cover}
-.cam-ov{position:absolute;inset:0;pointer-events:none}
-.arc-h{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:55px;height:55px}
-.arc-h::before,.arc-h::after{content:'';position:absolute;background:rgba(201,168,76,.8)}
-.arc-h::before{top:50%;left:0;right:0;height:1px;transform:translateY(-50%)}
-.arc-h::after{left:50%;top:0;bottom:0;width:1px;transform:translateX(-50%)}
-.arc-c{position:absolute;width:18px;height:18px;border-color:var(--gold);border-style:solid;border-width:0}
-.arc-c.tl{top:9px;left:9px;border-top-width:2px;border-left-width:2px}
-.arc-c.tr{top:9px;right:9px;border-top-width:2px;border-right-width:2px}
-.arc-c.bl{bottom:9px;left:9px;border-bottom-width:2px;border-left-width:2px}
-.arc-c.br{bottom:9px;right:9px;border-bottom-width:2px;border-right-width:2px}
-.ar-ql{position:absolute;top:0;left:50%;width:2px;transform-origin:bottom center;background:linear-gradient(to top,transparent,rgba(39,174,96,.9));display:flex;justify-content:center;transition:.5s ease;display:none}
-.ar-ql-lbl{position:absolute;top:7px;left:50%;transform:translateX(-50%);background:rgba(39,174,96,.85);color:#fff;font-size:.62rem;padding:3px 7px;border-radius:7px;white-space:nowrap;font-weight:600}
-.ar-mini{position:absolute;bottom:11px;right:11px;width:50px;height:50px;border-radius:50%;background:rgba(13,27,42,.8);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
-.ar-deg{position:absolute;top:38px;left:50%;transform:translateX(-50%);background:rgba(13,27,42,.8);border:1px solid var(--border);border-radius:18px;padding:3px 12px;font-size:.73rem;color:var(--gold);font-weight:500;white-space:nowrap}
-.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;color:var(--muted);font-size:.88rem;background:rgba(5,13,24,.95)}
-.cam-ph .phi{font-size:2.8rem;opacity:.4}
-.bear-strip{position:absolute;top:0;left:0;right:0;height:30px;background:rgba(13,27,42,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.bear-cont{display:flex;align-items:center;transition:.3s ease}
-.btick{color:var(--muted);font-size:.58rem;width:19px;text-align:center}
-.btick.card{color:var(--gold);font-weight:700}
-.bear-mark{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:100%;background:var(--gold);opacity:.8}
-.cam-btn{padding:11px 26px;background:linear-gradient(135deg,var(--teal),var(--teal-light));border:none;border-radius:22px;color:#fff;font-size:.88rem;font-family:'Inter',sans-serif;cursor:pointer;font-weight:500;box-shadow:0 4px 18px rgba(27,108,168,.4);transition:.25s}
-.cam-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(27,108,168,.5)}
-.cam-btn.dng{background:linear-gradient(135deg,#8B1A1A,var(--red));box-shadow:0 4px 18px rgba(231,76,60,.3)}
-.cam-note{font-size:.76rem;color:var(--muted);text-align:center;line-height:1.5;max-width:370px}
+.cam-ov{position:absolute;inset:0;pointer-events:none;z-index:2}
 
-/* ── AR KAMERA REDESIGN ── */
-.cam-vp{border-radius:22px;box-shadow:0 0 0 1px rgba(201,168,76,.15),0 10px 45px rgba(0,0,0,.5),0 0 60px rgba(27,108,168,.15);transition:box-shadow .4s}
 .cam-vp.locked{box-shadow:0 0 0 2px rgba(39,174,96,.7),0 10px 45px rgba(0,0,0,.5),0 0 70px rgba(39,174,96,.35)}
 .cam-vp.off-r{box-shadow:0 0 0 2px rgba(231,76,60,.55),0 10px 45px rgba(0,0,0,.5),0 0 50px rgba(231,76,60,.2)}
 .cam-vp.off-y{box-shadow:0 0 0 2px rgba(201,168,76,.6),0 10px 45px rgba(0,0,0,.5),0 0 50px rgba(201,168,76,.25)}
 
-/* scanline sweep */
-.cam-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+/* grid teknis halus + vignette sinematik (ambient, ringan) */
+.cam-grid{position:absolute;inset:0;pointer-events:none;opacity:.4;z-index:1;
+  background-image:linear-gradient(rgba(201,168,76,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.05) 1px,transparent 1px);
+  background-size:28px 28px;mask-image:radial-gradient(ellipse at center,#000 55%,transparent 92%)}
+.cam-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 52%,rgba(3,8,15,.65) 100%);z-index:2}
+.cam-scan{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
 .cam-scan::before{content:'';position:absolute;left:0;right:0;height:35%;background:linear-gradient(to bottom,transparent,rgba(120,200,255,.06) 40%,rgba(120,200,255,.13),rgba(120,200,255,.06) 60%,transparent);animation:scanMove 3.6s linear infinite}
 @keyframes scanMove{0%{top:-35%}100%{top:100%}}
 
-/* corner brackets glow when locked */
-.arc-c{transition:.35s;border-radius:2px}
+/* strip arah mata angin di atas (satu-satunya referensi bearing) */
+.bear-strip{position:absolute;top:0;left:0;right:0;height:28px;background:rgba(13,27,42,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bear-cont{display:flex;align-items:center;transition:.3s ease}
+.btick{color:var(--muted);font-size:.58rem;width:19px;text-align:center}
+.btick.card{color:var(--gold);font-weight:700}
+.bear-mark{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:100%;background:var(--gold);opacity:.8}
+
+/* garis sinar menuju Ka'bah — muncul saat arah kiblat berada dalam bidang layar */
+.ar-ql{position:absolute;top:28px;left:50%;bottom:0;width:3px;transform-origin:top center;background:linear-gradient(to bottom,rgba(39,174,96,.9),transparent);display:none;justify-content:center;transition:.5s ease;filter:drop-shadow(0 0 6px rgba(39,174,96,.7))}
+.ar-ql-lbl{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:rgba(39,174,96,.9);color:#fff;font-size:.64rem;padding:3px 8px;border-radius:7px;white-space:nowrap;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+
+/* ── reticle tunggal di tengah — satu titik fokus, tidak lagi berlapis-lapis ── */
+.hud-reticle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.arc-c{position:absolute;width:20px;height:20px;border-color:var(--gold);border-style:solid;border-width:0;transition:.35s;border-radius:2px}
+.arc-c.tl{top:9px;left:9px;border-top-width:2.2px;border-left-width:2.2px}
+.arc-c.tr{top:9px;right:9px;border-top-width:2.2px;border-right-width:2.2px}
+.arc-c.bl{bottom:9px;left:9px;border-bottom-width:2.2px;border-left-width:2.2px}
+.arc-c.br{bottom:9px;right:9px;border-bottom-width:2.2px;border-right-width:2.2px}
 .cam-vp.locked .arc-c{border-color:var(--green);filter:drop-shadow(0 0 6px rgba(39,174,96,.8))}
 .cam-vp.off-r .arc-c{border-color:var(--red)}
 .cam-vp.off-y .arc-c{border-color:var(--gold-light)}
 
-/* central reticle replacing plain crosshair */
-.arc-h{width:64px;height:64px;transition:.35s}
-.arc-h::before,.arc-h::after{background:rgba(201,168,76,.55);transition:.35s}
-.cam-vp.locked .arc-h::before,.cam-vp.locked .arc-h::after{background:var(--green)}
-.reticle-ring{position:absolute;top:50%;left:50%;width:26px;height:26px;transform:translate(-50%,-50%);border:1.5px solid rgba(201,168,76,.5);border-radius:50%;transition:.35s}
-.cam-vp.locked .reticle-ring{border-color:var(--green);width:34px;height:34px;box-shadow:0 0 16px rgba(39,174,96,.7);animation:lockPulse 1.1s ease-in-out infinite}
-@keyframes lockPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)}}
+.reticle-ring{position:relative;width:64px;height:64px;border:2px solid rgba(201,168,76,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.35s;background:rgba(13,27,42,.15)}
+.cam-vp.off-r .reticle-ring{border-color:var(--red)}
+.cam-vp.off-y .reticle-ring{border-color:var(--gold-light)}
+.cam-vp.locked .reticle-ring{border-color:var(--green);box-shadow:0 0 22px rgba(39,174,96,.75);animation:lockPulse 1.1s ease-in-out infinite}
+@keyframes lockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
-/* qibla arrow marker on bearing strip, restyled */
-.ar-ql{width:3px;filter:drop-shadow(0 0 6px rgba(39,174,96,.7))}
-.ar-ql-lbl{box-shadow:0 2px 10px rgba(0,0,0,.35);font-size:.66rem;padding:4px 9px}
+.reticle-check{font-size:1.5rem;color:var(--green);opacity:0;transform:scale(.5);transition:.3s}
+.cam-vp.locked .reticle-check{opacity:1;transform:scale(1)}
+.reticle-arrow{position:absolute;top:50%;transform:translateY(-50%);font-size:1.6rem;font-weight:700;color:var(--gold-light);opacity:0;transition:opacity .25s;text-shadow:0 0 10px rgba(201,168,76,.8)}
+.arrow-l{left:-38px;animation:arrowBounceL 1s ease-in-out infinite}
+.arrow-r{right:-38px;animation:arrowBounceR 1s ease-in-out infinite}
+@keyframes arrowBounceL{0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-50%) translateX(-6px)}}
+@keyframes arrowBounceR{0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-50%) translateX(6px)}}
+.cam-vp.dir-l .arrow-l{opacity:1}
+.cam-vp.dir-r .arrow-r{opacity:1}
+.cam-vp.off-r .reticle-arrow{color:#ff8a75;text-shadow:0 0 10px rgba(231,76,60,.75)}
+.cam-vp.locked .reticle-check{display:flex}
 
-/* live status pill */
-.ar-status{position:absolute;bottom:11px;left:11px;right:73px;display:flex;align-items:center;gap:7px;background:rgba(13,27,42,.82);border:1px solid var(--border);border-radius:14px;padding:8px 12px;transition:.3s;backdrop-filter:blur(6px)}
-.ar-status .asi{font-size:1.05rem;transition:.3s;flex-shrink:0}
-.ar-status .ast{font-size:.74rem;font-weight:600;color:var(--cream);line-height:1.25}
-.ar-status .asub{font-size:.62rem;color:var(--muted);font-weight:400}
+/* ledakan cahaya saat berhasil lock ke kiblat */
+.lock-burst{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(124,255,166,.95),rgba(39,174,96,.45) 45%,transparent 72%);opacity:0;pointer-events:none}
+.lock-burst.go{animation:burstGo .9s cubic-bezier(.2,.7,.3,1)}
+@keyframes burstGo{0%{opacity:.95;width:10px;height:10px}55%{opacity:.55}100%{opacity:0;width:280px;height:280px}}
+
+/* chip suara */
+.voice-chip{position:absolute;top:38px;right:11px;width:34px;height:34px;border-radius:50%;background:rgba(13,27,42,.82);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.95rem;pointer-events:auto;cursor:pointer;transition:.25s;z-index:3}
+.voice-chip.on{border-color:var(--teal-light);box-shadow:0 0 10px rgba(35,137,208,.4)}
+.voice-chip.muted{opacity:.55}
+
+/* ── kartu status bawah — satu-satunya sumber instruksi, dilengkapi gauge arah ── */
+.ar-status{position:absolute;bottom:11px;left:11px;right:11px;display:flex;flex-direction:column;gap:8px;background:rgba(13,27,42,.85);border:1px solid var(--border);border-radius:16px;padding:10px 13px;transition:.3s;backdrop-filter:blur(6px);z-index:3}
+.ar-status-top{display:flex;align-items:center;gap:9px}
+.ar-status .asi{font-size:1.3rem;transition:.3s;flex-shrink:0}
+.ar-status .ast{font-size:.85rem;font-weight:700;color:var(--cream);line-height:1.25}
+.ar-status .asub{font-size:.68rem;color:var(--muted);font-weight:400;margin-top:1px}
 .ar-status.r{border-color:rgba(231,76,60,.5)}
 .ar-status.r .ast{color:#ff8a75}
 .ar-status.y{border-color:rgba(201,168,76,.55)}
@@ -266,14 +289,24 @@ header{padding:16px 0 8px;display:flex;align-items:center;justify-content:space-
 @keyframes nudgeL{0%,100%{transform:translateX(0)}50%{transform:translateX(-5px)}}
 @keyframes nudgeR{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
 
-/* voice toggle chip */
-.voice-chip{position:absolute;top:38px;right:11px;width:34px;height:34px;border-radius:50%;background:rgba(13,27,42,.82);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.95rem;pointer-events:auto;cursor:pointer;transition:.25s}
-.voice-chip.on{border-color:var(--teal-light);box-shadow:0 0 10px rgba(35,137,208,.4)}
-.voice-chip.muted{opacity:.55}
+/* gauge horizontal: seberapa jauh & ke arah mana harus berputar — bikin panduan jadi terukur, tidak ambigu */
+.align-track{position:relative;height:7px;border-radius:4px;background:linear-gradient(90deg,rgba(231,76,60,.35),rgba(201,168,76,.35) 38%,rgba(39,174,96,.55) 50%,rgba(201,168,76,.35) 62%,rgba(231,76,60,.35))}
+.align-target{position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:2px;height:13px;background:var(--gold-light);border-radius:1px}
+.align-dot{position:absolute;top:50%;left:50%;width:15px;height:15px;border-radius:50%;background:var(--gold-light);border:2px solid #0D1B2A;transform:translate(-50%,-50%);transition:left .35s cubic-bezier(.25,.46,.45,.94),background .3s;box-shadow:0 0 8px rgba(0,0,0,.4)}
+.align-dot.g{background:var(--green);box-shadow:0 0 10px rgba(39,174,96,.85)}
+.align-dot.r{background:var(--red);box-shadow:0 0 10px rgba(231,76,60,.7)}
 
-/* kaaba distance/deg pill restyle */
-.ar-deg{border-radius:14px;font-weight:600;letter-spacing:.02em}
-.ar-mini{background:rgba(13,27,42,.85);border-width:1.5px}
+/* placeholder kamera-mati */
+.cam-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;color:var(--muted);font-size:.88rem;background:rgba(5,13,24,.95);z-index:4}
+.cam-ph .phi{position:relative;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border-radius:50%;
+  border:1.5px dashed rgba(201,168,76,.35);animation:phiSpin 14s linear infinite;font-size:1.7rem;opacity:.75}
+@keyframes phiSpin{to{transform:rotate(360deg)}}
+
+.cam-btn{padding:11px 26px;background:linear-gradient(135deg,var(--teal),var(--teal-light));border:none;border-radius:22px;color:#fff;font-size:.88rem;font-family:'Inter',sans-serif;cursor:pointer;font-weight:500;box-shadow:0 4px 18px rgba(27,108,168,.4);transition:.25s}
+.cam-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(27,108,168,.5)}
+.cam-btn.dng{background:linear-gradient(135deg,#8B1A1A,var(--red));box-shadow:0 4px 18px rgba(231,76,60,.3)}
+.cam-btn:disabled{opacity:.6;cursor:default;transform:none}
+.cam-note{font-size:.76rem;color:var(--muted);text-align:center;line-height:1.5;max-width:370px}
 
 /* ── AL-QURAN ── */
 .quran-wrap{display:flex;flex-direction:column;gap:14px}
@@ -409,6 +442,39 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
   <rect x="0" y="230" width="700" height="50"/>
 </svg>
 
+<!-- MATAHARI — motif 12 sinar, ciri khas visual Muhammadiyah, tampil di semua halaman -->
+<div class="matahari-wrap" aria-hidden="true">
+  <svg viewBox="0 0 200 200">
+    <defs>
+      <radialGradient id="mhRayGrad" cx="50%" cy="50%" r="65%">
+        <stop offset="0%" stop-color="#E8C96A"/>
+        <stop offset="100%" stop-color="#C9A84C"/>
+      </radialGradient>
+      <radialGradient id="mhCoreGrad" cx="35%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#2389D0"/>
+        <stop offset="100%" stop-color="#0D1B2A"/>
+      </radialGradient>
+    </defs>
+    <circle class="mh-ring" cx="100" cy="100" r="96"/>
+    <circle class="mh-ring" cx="100" cy="100" r="30"/>
+    <g>
+      <path class="mh-ray" d="M95.56,66.29 Q93.11,34.46 100.00,8.00 Q106.89,34.46 104.44,66.29 Z"/>
+      <path class="mh-ray" d="M113.01,68.59 Q126.80,39.80 146.00,20.33 Q138.74,46.69 120.70,73.03 Z"/>
+      <path class="mh-ray" d="M126.97,79.30 Q153.31,61.26 179.67,54.00 Q160.20,73.20 131.41,86.99 Z"/>
+      <path class="mh-ray" d="M133.71,95.56 Q165.54,93.11 192.00,100.00 Q165.54,106.89 133.71,104.44 Z"/>
+      <path class="mh-ray" d="M131.41,113.01 Q160.20,126.80 179.67,146.00 Q153.31,138.74 126.97,120.70 Z"/>
+      <path class="mh-ray" d="M120.70,126.97 Q138.74,153.31 146.00,179.67 Q126.80,160.20 113.01,131.41 Z"/>
+      <path class="mh-ray" d="M104.44,133.71 Q106.89,165.54 100.00,192.00 Q93.11,165.54 95.56,133.71 Z"/>
+      <path class="mh-ray" d="M86.99,131.41 Q73.20,160.20 54.00,179.67 Q61.26,153.31 79.30,126.97 Z"/>
+      <path class="mh-ray" d="M73.03,120.70 Q46.69,138.74 20.33,146.00 Q39.80,126.80 68.59,113.01 Z"/>
+      <path class="mh-ray" d="M66.29,104.44 Q34.46,106.89 8.00,100.00 Q34.46,93.11 66.29,95.56 Z"/>
+      <path class="mh-ray" d="M68.59,86.99 Q39.80,73.20 20.33,54.00 Q46.69,61.26 73.03,79.30 Z"/>
+      <path class="mh-ray" d="M79.30,73.03 Q61.26,46.69 54.00,20.33 Q73.20,39.80 86.99,68.59 Z"/>
+    </g>
+    <circle class="mh-core" cx="100" cy="100" r="30"/>
+  </svg>
+</div>
+
 <div class="app">
 
   <!-- HEADER -->
@@ -515,28 +581,37 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
     <div class="cam-section">
       <div class="cam-vp" id="camVp">
         <video id="camFeed" autoplay playsinline muted></video>
+        <div class="cam-grid"></div>
         <div class="cam-scan"></div>
         <div class="cam-ov">
           <div class="bear-strip"><div class="bear-cont" id="bearCont"></div><div class="bear-mark"></div></div>
-          <div class="arc-c tl"></div><div class="arc-c tr"></div><div class="arc-c bl"></div><div class="arc-c br"></div>
-          <div class="arc-h"></div>
-          <div class="reticle-ring" id="reticleRing"></div>
           <div class="ar-ql" id="arQL"><div class="ar-ql-lbl">🕋 Kiblat</div></div>
-          <div class="ar-deg" id="arDeg">Kiblat: –°</div>
-          <div class="ar-mini">🧭</div>
+          <div class="hud-reticle">
+            <div class="arc-c tl"></div><div class="arc-c tr"></div><div class="arc-c bl"></div><div class="arc-c br"></div>
+            <div class="reticle-ring" id="reticleRing">
+              <div class="reticle-arrow arrow-l">◀</div>
+              <div class="reticle-check">✓</div>
+              <div class="reticle-arrow arrow-r">▶</div>
+            </div>
+            <div class="lock-burst" id="lockBurst"></div>
+          </div>
           <div class="voice-chip on" id="voiceChip" onclick="toggleVoice()" style="pointer-events:auto">🔊</div>
           <div class="ar-status" id="arStatus">
-            <span class="asi" id="arStatusIcon">🧭</span>
-            <span>
-              <div class="ast" id="arStatusText">Mencari arah…</div>
-              <div class="asub" id="arStatusSub">Arahkan kamera perlahan</div>
-            </span>
+            <div class="ar-status-top">
+              <span class="asi" id="arStatusIcon">🧭</span>
+              <span>
+                <div class="ast" id="arStatusText">Mencari arah…</div>
+                <div class="asub" id="arStatusSub">Arahkan kamera perlahan</div>
+              </span>
+            </div>
+            <div class="align-track"><div class="align-fill" id="alignFill"></div><div class="align-target"></div><div class="align-dot" id="alignDot"></div></div>
           </div>
         </div>
+        <div class="cam-vignette"></div>
         <div class="cam-ph" id="camPh">
           <div class="phi">📷</div>
           <p>Kamera belum aktif</p>
-          <p style="font-size:.73rem;max-width:190px;text-align:center">Nyalakan kamera untuk AR arah kiblat</p>
+          <p style="font-size:.73rem;max-width:210px;text-align:center">Nyalakan kamera untuk melihat panduan arah kiblat langsung di layar</p>
         </div>
       </div>
       <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">
@@ -1043,8 +1118,6 @@ function updateQibla(){
   document.getElementById('qDist').textContent=Math.round(dist).toLocaleString('id')+'km';
   const rel=qAngleVal-compassH;
   document.getElementById('qnw').style.transform=`rotate(${rel}deg)`;
-  document.getElementById('arQL').style.transform=`translateX(-50%) rotate(${rel}deg)`;
-  document.getElementById('arDeg').textContent=`Kiblat: ${Math.round(qAngleVal)}° | Hadap: ${Math.round(compassH)}°`;
   // Nyalakan gerbang mihrab & berkas cahaya saat perangkat sudah pas menghadap kiblat
   const shortDiff=Math.abs(((rel%360)+540)%360-180);
   const cmpRing=document.getElementById('cmpRing');
@@ -1200,6 +1273,7 @@ function updateARStatus(h){
   const sub=document.getElementById('arStatusSub');
   const status=document.getElementById('arStatus');
   let state,cls,iconTxt,mainTxt,subTxt;
+  const prevState=lastARState;
 
   // Hysteresis (ambang masuk vs keluar berbeda) agar status tidak lompat-lompat
   // saat sudut persis di garis batas — ini yang membuat panduan terasa "pusing".
@@ -1208,7 +1282,7 @@ function updateARStatus(h){
 
   if(inLock){
     state='lock';cls='g';iconTxt='✅';mainTxt='Pas! Lurus ke Kiblat';subTxt='Pertahankan posisi ini';
-    vp.classList.add('locked');vp.classList.remove('off-r','off-y');
+    vp.classList.add('locked');vp.classList.remove('off-r','off-y','dir-l','dir-r');
   } else if(inSlight){
     cls='y';
     if(signed>0){state='r-slight';iconTxt='↪️';mainTxt='Geser sedikit ke kanan';}
@@ -1222,6 +1296,12 @@ function updateARStatus(h){
     subTxt=`Selisih ±${Math.round(abs)}°`;
     vp.classList.add('off-r');vp.classList.remove('locked','off-y');
   }
+  vp.classList.toggle('dir-l',state==='l-slight'||state==='l-far');
+  vp.classList.toggle('dir-r',state==='r-slight'||state==='r-far');
+  if(state==='lock'&&prevState!=='lock'){
+    triggerLockBurst();
+    if(navigator.vibrate)navigator.vibrate([40,30,60]); // getar singkat sebagai penanda "pas" — memperjelas tanpa harus lihat layar terus
+  }
   lastARState=state;
   icon.textContent=iconTxt;
   icon.className='asi'+(state==='l-slight'||state==='l-far'?' nudge-l':state==='r-slight'||state==='r-far'?' nudge-r':'');
@@ -1229,9 +1309,25 @@ function updateARStatus(h){
   sub.textContent=subTxt;
   status.className='ar-status '+cls;
 
+  // gauge arah: titik bergerak sepanjang track sesuai selisih sudut (dijepit ±45° agar selalu terlihat jelas)
+  const dot=document.getElementById('alignDot');
+  if(dot){
+    const clamped=Math.max(-45,Math.min(45,signed));
+    const pct=50+(clamped/45)*50;
+    dot.style.left=pct+'%';
+    dot.className='align-dot'+(state==='lock'?' g':(state==='l-far'||state==='r-far')?' r':'');
+  }
+
   speakGuidance(state,mainTxt);
 }
 
+function triggerLockBurst(){
+  const burst=document.getElementById('lockBurst');
+  if(!burst)return;
+  burst.classList.remove('go');
+  void burst.offsetWidth; // paksa reflow agar animasi bisa diulang
+  burst.classList.add('go');
+}
 function speakGuidance(state,mainTxt){
   if(!voiceEnabled||!('speechSynthesis' in window))return;
   if(document.getElementById('panel-kamera')&&!document.getElementById('panel-kamera').classList.contains('active'))return;
@@ -1286,8 +1382,8 @@ function stopCam(){
   document.getElementById('camStartBtn').style.display='inline-flex';
   document.getElementById('camStopBtn').style.display='none';
   document.getElementById('arQL').style.display='none';
-  document.getElementById('camVp').classList.remove('locked','off-r','off-y');
-  lastSpokenState=null;
+  document.getElementById('camVp').classList.remove('locked','off-r','off-y','dir-l','dir-r');
+  lastSpokenState=null;lastARState=null;
   if('speechSynthesis' in window)speechSynthesis.cancel();
 }
 
