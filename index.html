@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Sholat Digital — Jadwal, Kiblat & Al-Quran</title>
+<title>QiblaOne — Jadwal, Kiblat & Al-Quran</title>
 
 <!-- PWA: bisa diinstal seperti aplikasi -->
 <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sholat Digital">
+<meta name="apple-mobile-web-app-title" content="QiblaOne">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 
@@ -228,38 +228,21 @@ header{padding:16px 0 8px;display:flex;align-items:center;justify-content:space-
 .btick.card{color:var(--gold);font-weight:700}
 .bear-mark{position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:100%;background:var(--gold);opacity:.8}
 
-/* garis sinar menuju Ka'bah — muncul saat arah kiblat berada dalam bidang layar */
-.ar-ql{position:absolute;top:28px;left:50%;bottom:0;width:3px;transform-origin:top center;background:linear-gradient(to bottom,rgba(39,174,96,.9),transparent);display:none;justify-content:center;transition:.5s ease;filter:drop-shadow(0 0 6px rgba(39,174,96,.7))}
-.ar-ql-lbl{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:rgba(39,174,96,.9);color:#fff;font-size:.64rem;padding:3px 8px;border-radius:7px;white-space:nowrap;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+/* ── AR pin Ka'bah — mengambang di layar seperti penanda peta, mengikuti arah kiblat ── */
+.ar-beam-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+#beamLine{transition:x2 .3s ease,y2 .3s ease}
 
-/* ── reticle tunggal di tengah — satu titik fokus, tidak lagi berlapis-lapis ── */
-.hud-reticle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.arc-c{position:absolute;width:20px;height:20px;border-color:var(--gold);border-style:solid;border-width:0;transition:.35s;border-radius:2px}
-.arc-c.tl{top:9px;left:9px;border-top-width:2.2px;border-left-width:2.2px}
-.arc-c.tr{top:9px;right:9px;border-top-width:2.2px;border-right-width:2.2px}
-.arc-c.bl{bottom:9px;left:9px;border-bottom-width:2.2px;border-left-width:2.2px}
-.arc-c.br{bottom:9px;right:9px;border-bottom-width:2.2px;border-right-width:2.2px}
-.cam-vp.locked .arc-c{border-color:var(--green);filter:drop-shadow(0 0 6px rgba(39,174,96,.8))}
-.cam-vp.off-r .arc-c{border-color:var(--red)}
-.cam-vp.off-y .arc-c{border-color:var(--gold-light)}
+.ar-pin{position:absolute;left:50%;top:26%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;z-index:3;transition:left .3s ease;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
+.pin-dist{background:rgba(13,27,42,.88);border:1px solid var(--border);color:var(--cream);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:10px;margin-bottom:7px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+.pin-body{width:46px;height:46px;border-radius:50% 50% 50% 0;background:linear-gradient(135deg,var(--teal-light),var(--teal));transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(255,255,255,.14),0 0 18px rgba(35,137,208,.55);transition:background .3s,box-shadow .3s}
+.pin-icon{transform:rotate(45deg);font-size:1.35rem;line-height:1}
+.ar-pin.g .pin-body{background:linear-gradient(135deg,#4ee08a,var(--green));box-shadow:0 0 0 3px rgba(255,255,255,.18),0 0 26px rgba(39,174,96,.85)}
+.ar-pin.g{animation:pinLock 1.1s ease-in-out infinite}
+@keyframes pinLock{0%,100%{transform:translate(-50%,-100%) scale(1)}50%{transform:translate(-50%,-100%) scale(1.08)}}
 
-.reticle-ring{position:relative;width:64px;height:64px;border:2px solid rgba(201,168,76,.55);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.35s;background:rgba(13,27,42,.15)}
-.cam-vp.off-r .reticle-ring{border-color:var(--red)}
-.cam-vp.off-y .reticle-ring{border-color:var(--gold-light)}
-.cam-vp.locked .reticle-ring{border-color:var(--green);box-shadow:0 0 22px rgba(39,174,96,.75);animation:lockPulse 1.1s ease-in-out infinite}
-@keyframes lockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-
-.reticle-check{font-size:1.5rem;color:var(--green);opacity:0;transform:scale(.5);transition:.3s}
-.cam-vp.locked .reticle-check{opacity:1;transform:scale(1)}
-.reticle-arrow{position:absolute;top:50%;transform:translateY(-50%);font-size:1.6rem;font-weight:700;color:var(--gold-light);opacity:0;transition:opacity .25s;text-shadow:0 0 10px rgba(201,168,76,.8)}
-.arrow-l{left:-38px;animation:arrowBounceL 1s ease-in-out infinite}
-.arrow-r{right:-38px;animation:arrowBounceR 1s ease-in-out infinite}
-@keyframes arrowBounceL{0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-50%) translateX(-6px)}}
-@keyframes arrowBounceR{0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-50%) translateX(6px)}}
-.cam-vp.dir-l .arrow-l{opacity:1}
-.cam-vp.dir-r .arrow-r{opacity:1}
-.cam-vp.off-r .reticle-arrow{color:#ff8a75;text-shadow:0 0 10px rgba(231,76,60,.75)}
-.cam-vp.locked .reticle-check{display:flex}
+/* sajadah AR di lantai — bayangan panduan arah, menyala saat sudah lurus ke kiblat */
+.ar-mat{position:absolute;bottom:2px;left:50%;width:58%;max-width:230px;transform:translateX(-50%);z-index:1;opacity:.45;transition:opacity .4s,filter .4s;pointer-events:none}
+.ar-mat.locked{opacity:1;filter:drop-shadow(0 0 14px rgba(201,168,76,.65))}
 
 /* ledakan cahaya saat berhasil lock ke kiblat */
 .lock-burst{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);
@@ -267,10 +250,7 @@ header{padding:16px 0 8px;display:flex;align-items:center;justify-content:space-
 .lock-burst.go{animation:burstGo .9s cubic-bezier(.2,.7,.3,1)}
 @keyframes burstGo{0%{opacity:.95;width:10px;height:10px}55%{opacity:.55}100%{opacity:0;width:280px;height:280px}}
 
-/* chip suara */
-.voice-chip{position:absolute;top:38px;right:11px;width:34px;height:34px;border-radius:50%;background:rgba(13,27,42,.82);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.95rem;pointer-events:auto;cursor:pointer;transition:.25s;z-index:3}
-.voice-chip.on{border-color:var(--teal-light);box-shadow:0 0 10px rgba(35,137,208,.4)}
-.voice-chip.muted{opacity:.55}
+/* chip suara — dihapus */
 
 /* ── kartu status bawah — satu-satunya sumber instruksi, dilengkapi gauge arah ── */
 .ar-status{position:absolute;bottom:11px;left:11px;right:11px;display:flex;flex-direction:column;gap:8px;background:rgba(13,27,42,.85);border:1px solid var(--border);border-radius:16px;padding:10px 13px;transition:.3s;backdrop-filter:blur(6px);z-index:3}
@@ -479,7 +459,7 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
 
   <!-- HEADER -->
   <header>
-    <div class="logo">Sholat<span> Digital</span></div>
+    <div class="logo">Qibla<span>One</span></div>
     <div style="display:flex;align-items:center;gap:8px">
       <button id="installBtn" onclick="installApp()" style="display:none;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(27,108,168,.2));border:1px solid rgba(201,168,76,.4);color:var(--gold-light);border-radius:20px;padding:5px 12px;font-size:.73rem;font-family:'Inter',sans-serif;cursor:pointer">
         ⬇️ Instal App
@@ -585,17 +565,26 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
         <div class="cam-scan"></div>
         <div class="cam-ov">
           <div class="bear-strip"><div class="bear-cont" id="bearCont"></div><div class="bear-mark"></div></div>
-          <div class="ar-ql" id="arQL"><div class="ar-ql-lbl">🕋 Kiblat</div></div>
-          <div class="hud-reticle">
-            <div class="arc-c tl"></div><div class="arc-c tr"></div><div class="arc-c bl"></div><div class="arc-c br"></div>
-            <div class="reticle-ring" id="reticleRing">
-              <div class="reticle-arrow arrow-l">◀</div>
-              <div class="reticle-check">✓</div>
-              <div class="reticle-arrow arrow-r">▶</div>
-            </div>
-            <div class="lock-burst" id="lockBurst"></div>
+          <svg class="ar-beam-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="beamGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#2389D0" stop-opacity="0"/>
+                <stop offset="55%" stop-color="#2389D0" stop-opacity=".55"/>
+                <stop offset="100%" stop-color="#E8C96A" stop-opacity=".95"/>
+              </linearGradient>
+            </defs>
+            <line id="beamLine" x1="50" y1="100" x2="50" y2="26" stroke="url(#beamGrad)" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          <svg class="ar-mat" id="arMat" viewBox="0 0 200 90" preserveAspectRatio="none">
+            <polygon points="36,90 164,90 128,6 72,6" fill="rgba(201,168,76,.09)" stroke="#C9A84C" stroke-width="1.4"/>
+            <polygon points="52,80 148,80 121,18 79,18" fill="none" stroke="#C9A84C" stroke-width="1" opacity=".6"/>
+            <path d="M100,18 Q121,40 100,62 Q79,40 100,18 Z" fill="rgba(201,168,76,.2)" stroke="#C9A84C" stroke-width="1"/>
+          </svg>
+          <div class="ar-pin" id="arPin">
+            <div class="pin-dist" id="pinDist">– km</div>
+            <div class="pin-body"><div class="pin-icon">🕋</div></div>
           </div>
-          <div class="voice-chip on" id="voiceChip" onclick="toggleVoice()" style="pointer-events:auto">🔊</div>
+          <div class="lock-burst" id="lockBurst"></div>
           <div class="ar-status" id="arStatus">
             <div class="ar-status-top">
               <span class="asi" id="arStatusIcon">🧭</span>
@@ -618,7 +607,7 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
         <button class="cam-btn" id="camStartBtn" onclick="startCam()">📷 Nyalakan Kamera</button>
         <button class="cam-btn dng" id="camStopBtn" onclick="stopCam()" style="display:none">⏹ Matikan</button>
       </div>
-      <p class="cam-note">🔒 Kamera hanya aktif di perangkat lokal — tidak dikirim ke server.<br>Izinkan akses kamera & sensor orientasi untuk fitur AR. Tekan 🔊 untuk aktif/nonaktifkan panduan suara.</p>
+      <p class="cam-note">🔒 Kamera hanya aktif di perangkat lokal — tidak dikirim ke server.<br>Izinkan akses kamera & sensor orientasi untuk fitur AR.</p>
     </div>
   </div>
 
@@ -770,7 +759,7 @@ select.ss{background:rgba(27,108,168,.18);border:1px solid rgba(27,108,168,.38);
       </div>
 
       <div style="text-align:center;padding:18px 0;color:var(--muted);font-size:.73rem;line-height:1.8">
-        🕌 Sholat Digital v2.1<br>
+        🕌 QiblaOne v2.1<br>
         Akurasi Muhammadiyah · Kemenag · Al-Quran + Audio + Latin<br>
         Koordinat Ka'bah: 21.4225° U, 39.8262° T
       </div>
@@ -852,7 +841,7 @@ const FALLBACK_AYAH_AUDIO  = 'https://cdn.islamic.network/quran/audio/128/ar.ala
 const FALLBACK_SURAH_AUDIO = 'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/';
 
 let uLat=-5.1477, uLng=119.4327;
-let pTimes={}, qAngleVal=0, compassH=0;
+let pTimes={}, qAngleVal=0, compassH=0, qDistVal=0;
 let demoIv=null, camStream=null;
 // ── State sensor kompas (robust) ──
 let realSensorActive=false;   // true hanya jika sudah menerima data sensor ASLI yang valid
@@ -860,7 +849,6 @@ let absoluteLocked=false;     // true jika sumber data sudah terkunci ke pembaca
 let smoothedHeading=null;     // heading hasil smoothing (anti-jitter/anti-pusing)
 let orientWatchdog=null;      // timer: jika sensor tak merespon, fallback ke demo
 let lastARState=null;         // untuk hysteresis status panduan AR (anti kedip-kedip)
-let voiceEnabled=true, lastSpokenState=null, lastSpokenTs=0;
 let alertedSet=new Set();
 let selectedQari='05';
 let currentSurahNum=null, ayahAudioMap={}, currentAudioFull={}, usingFallbackSource=false;
@@ -1114,8 +1102,11 @@ function calcDist(la1,ln1,la2,ln2){
 function updateQibla(){
   qAngleVal=calcQibla(uLat,uLng);
   const dist=calcDist(uLat,uLng,KAABA.lat,KAABA.lng);
+  qDistVal=dist;
   document.getElementById('qAngle').textContent=Math.round(qAngleVal)+'°';
   document.getElementById('qDist').textContent=Math.round(dist).toLocaleString('id')+'km';
+  const pinDist=document.getElementById('pinDist');
+  if(pinDist)pinDist.textContent=Math.round(dist).toLocaleString('id')+' km';
   const rel=qAngleVal-compassH;
   document.getElementById('qnw').style.transform=`rotate(${rel}deg)`;
   // Nyalakan gerbang mihrab & berkas cahaya saat perangkat sudah pas menghadap kiblat
@@ -1252,10 +1243,6 @@ function initBearing(){
 function updateBearing(h){
   const c=document.getElementById('bearCont'),tw=19;
   c.style.transform=`translateX(${-(h/360*72*tw)%(72*tw)}px)`;
-  const ql=document.getElementById('arQL');
-  const diff=Math.abs(((qAngleVal-h)+360)%360);
-  ql.style.display=diff<50||diff>310?'flex':'none';
-  if(diff<50||diff>310)ql.style.transform=`translateX(-50%) rotate(${qAngleVal-h}deg)`;
   updateARStatus(h);
 }
 
@@ -1298,6 +1285,21 @@ function updateARStatus(h){
   }
   vp.classList.toggle('dir-l',state==='l-slight'||state==='l-far');
   vp.classList.toggle('dir-r',state==='r-slight'||state==='r-far');
+
+  // Pin Ka'bah mengambang: geser kiri/kanan mengikuti selisih sudut, tetap terlihat di layar
+  // walau selisihnya besar (diklem ±70°) supaya pengguna selalu punya arah yang dituju.
+  const pin=document.getElementById('arPin');
+  const beam=document.getElementById('beamLine');
+  const mat=document.getElementById('arMat');
+  if(pin){
+    const clamped=Math.max(-70,Math.min(70,signed));
+    const pct=50+(clamped/70)*42;
+    pin.style.left=pct+'%';
+    pin.classList.toggle('g',state==='lock');
+    if(beam)beam.setAttribute('x2',pct);
+  }
+  if(mat)mat.classList.toggle('locked',state==='lock');
+
   if(state==='lock'&&prevState!=='lock'){
     triggerLockBurst();
     if(navigator.vibrate)navigator.vibrate([40,30,60]); // getar singkat sebagai penanda "pas" — memperjelas tanpa harus lihat layar terus
@@ -1317,8 +1319,6 @@ function updateARStatus(h){
     dot.style.left=pct+'%';
     dot.className='align-dot'+(state==='lock'?' g':(state==='l-far'||state==='r-far')?' r':'');
   }
-
-  speakGuidance(state,mainTxt);
 }
 
 function triggerLockBurst(){
@@ -1328,38 +1328,6 @@ function triggerLockBurst(){
   void burst.offsetWidth; // paksa reflow agar animasi bisa diulang
   burst.classList.add('go');
 }
-function speakGuidance(state,mainTxt){
-  if(!voiceEnabled||!('speechSynthesis' in window))return;
-  if(document.getElementById('panel-kamera')&&!document.getElementById('panel-kamera').classList.contains('active'))return;
-  if(!camStream)return;
-  const now=Date.now();
-  const changed=state!==lastSpokenState;
-  const cooldown=state==='lock'?4500:3200;
-  if(!changed&&now-lastSpokenTs<cooldown)return;
-  if(changed&&now-lastSpokenTs<1200)return; // avoid rapid flicker chatter
-  lastSpokenState=state;lastSpokenTs=now;
-  let phrase=mainTxt;
-  if(state==='lock')phrase='Pas, Anda sudah menghadap kiblat';
-  else if(state==='l-slight'||state==='l-far')phrase='Arah kiblat masih di sebelah kiri, '+mainTxt.toLowerCase();
-  else if(state==='r-slight'||state==='r-far')phrase='Arah kiblat masih di sebelah kanan, '+mainTxt.toLowerCase();
-  try{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(phrase);
-    u.lang='id-ID';u.rate=.98;u.pitch=1;u.volume=.9;
-    speechSynthesis.speak(u);
-  }catch(e){}
-}
-
-function toggleVoice(){
-  voiceEnabled=!voiceEnabled;
-  const chip=document.getElementById('voiceChip');
-  chip.textContent=voiceEnabled?'🔊':'🔇';
-  chip.classList.toggle('on',voiceEnabled);
-  chip.classList.toggle('muted',!voiceEnabled);
-  if(!voiceEnabled&&'speechSynthesis' in window)speechSynthesis.cancel();
-  showToast(voiceEnabled?'🔊 Panduan suara aktif':'🔇 Panduan suara nonaktif');
-}
-
 // ══════════════════════════════════════════
 // CAMERA
 // ══════════════════════════════════════════
@@ -1370,8 +1338,7 @@ async function startCam(){
     document.getElementById('camPh').style.display='none';
     document.getElementById('camStartBtn').style.display='none';
     document.getElementById('camStopBtn').style.display='inline-flex';
-    document.getElementById('arQL').style.display='flex';
-    showToast('📷 Kamera aktif! Cari panah hijau 🕋');
+    showToast('📷 Kamera aktif! Ikuti pin 🕋 sampai berubah hijau');
     if(!realSensorActive&&!demoIv)simCompass();
   }catch(e){showToast('⚠️ Kamera gagal: '+e.message);}
 }
@@ -1381,10 +1348,8 @@ function stopCam(){
   document.getElementById('camPh').style.display='flex';
   document.getElementById('camStartBtn').style.display='inline-flex';
   document.getElementById('camStopBtn').style.display='none';
-  document.getElementById('arQL').style.display='none';
   document.getElementById('camVp').classList.remove('locked','off-r','off-y','dir-l','dir-r');
-  lastSpokenState=null;lastARState=null;
-  if('speechSynthesis' in window)speechSynthesis.cancel();
+  lastARState=null;
 }
 
 // ══════════════════════════════════════════
